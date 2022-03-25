@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/sample_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hello World!"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <Button
+        android:id="@+id/btnClose"
+        android:layout_width="106dp"
+        android:layout_height="48dp"
+        android:layout_alignBaseline="@+id/btnOpen"
+        android:layout_alignBottom="@+id/btnOpen"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginBottom="50dp"
+        android:layout_toRightOf="@+id/btnOpen"
+        android:background="@drawable/button_selector_other"
+        android:text="退出程序"
+        android:textColor="#FCFCFC"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/btnVersion"
+        app:layout_constraintTop_toBottomOf="@+id/textView1"
+        app:layout_constraintVertical_bias="0.0"
+        app:strokeColor="@color/purple_700" />
+
+    <Button
+        android:id="@+id/btnOpen"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="50dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/button_selector_other"
+        android:backgroundTint="#CDDC39"
+        android:text="打开指纹"
+        android:textColor="#FCFCFC"
+        app:layout_constraintBottom_toTopOf="@+id/btnGather"
+        app:layout_constraintEnd_toStartOf="@+id/textView1"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.417" />
+
+    <Button
+        android:id="@+id/btnGather"
+        android:layout_width="100dp"
+        android:layout_height="60dp"
+        android:layout_below="@+id/btnClose"
+        android:layout_alignLeft="@+id/btnClose"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/button_selector"
+        android:text="采集指纹(原始图)"
+        android:textColor="#FCFCFC"
+        app:layout_constraintBottom_toTopOf="@+id/btnGather2"
+        app:layout_constraintStart_toStartOf="@+id/btnOpen"
+        app:layout_constraintTop_toBottomOf="@+id/btnOpen" />
+
+    <Button
+        android:id="@+id/btnGather2"
+        android:layout_width="100dp"
+        android:layout_height="60dp"
+        android:layout_below="@+id/btnClose"
+        android:layout_alignLeft="@+id/btnClose"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/button_selector"
+        android:text="采集指纹(去背景)"
+        android:textColor="#FCFCFC"
+        app:layout_constraintBottom_toTopOf="@+id/btnCal"
+        app:layout_constraintStart_toStartOf="@+id/btnGather"
+        app:layout_constraintTop_toBottomOf="@+id/btnGather" />
+
+    <Button
+        android:id="@+id/btnCal"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_below="@+id/btnClose"
+        android:layout_alignLeft="@+id/btnClose"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/button_selector"
+        android:text="校准"
+        android:textColor="#FCFCFC"
+        app:layout_constraintBottom_toTopOf="@+id/fpImage"
+        app:layout_constraintStart_toStartOf="@+id/btnGather2"
+        app:layout_constraintTop_toBottomOf="@+id/btnGather2" />
+
+    <Button
+        android:id="@+id/btnVersion"
+        android:layout_width="106dp"
+        android:layout_height="48dp"
+        android:layout_alignLeft="@+id/fpImage"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="50dp"
+        android:background="@drawable/button_selector"
+        android:text="获取版本"
+        android:textColor="#FCFCFC"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btnClose"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/btnTest"
+        app:layout_constraintTop_toBottomOf="@+id/textView1" />
+
+    <Button
+        android:id="@+id/btnTest"
+        android:layout_width="106dp"
+        android:layout_height="48dp"
+        android:layout_alignBaseline="@+id/btnVersion"
+        android:layout_alignBottom="@+id/btnVersion"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="50dp"
+        android:background="@drawable/button_selector"
+        android:text="测试"
+        android:textColor="#FCFCFC"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btnVersion"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fpImage"
+        app:layout_constraintVertical_bias="0.618" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="188dp"
+        android:layout_height="448dp"
+        android:layout_above="@+id/fpImage"
+        android:layout_alignLeft="@+id/btnOpen"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="100dp"
+        android:layout_marginBottom="20dp"
+        android:background="#D1D0C4"
+        android:scrollbars="vertical"
+        android:text="提示："
+        android:textColor="#000000"
+        android:textSize="15dip"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/btnVersion"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/fpImage"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/fpImage"
+        android:layout_width="64dp"
+        android:layout_height="90dp"
+        android:layout_above="@+id/btnClose"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="150dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:adjustViewBounds="false"
+        android:background="#6CA8C3"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/btnTest"
+        app:layout_constraintEnd_toStartOf="@+id/textView1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnCal" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="20dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_end="711dp" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
