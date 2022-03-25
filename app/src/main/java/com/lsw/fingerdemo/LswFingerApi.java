@@ -6,7 +6,7 @@ public class LswFingerApi {
         System.loadLibrary("lswfinger");
     }
 
-    public static native int lswFingerApiInit();
+    public static native int lswFingerApiInit(int fd);
 
     public static native int lswFingerApiOpen();
 
@@ -14,7 +14,7 @@ public class LswFingerApi {
 
     public static native int lswFingerApiTest();
 
-    public static native int lswFingerApiGatherRawFinger();
+    public static native byte[] lswFingerApiGatherRawFinger();
 
     public static native int lswFingerApiGatherFingerDelBg();
 

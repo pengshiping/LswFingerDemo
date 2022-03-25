@@ -118,7 +118,7 @@ public class UsbApiManager {
                permit = 1;
                fd = mDeviceConnection.getFileDescriptor();
                Log.i(TAG,"openDevice success fd:" + fd);
-               LswFingerApi.lswFingerApiInit();
+               LswFingerApi.lswFingerApiInit(fd);
                return FingerStatusCode.STATUS_OK;
            }
            // mDeviceConnection.claimInterface(interfaceA,true);
@@ -157,7 +157,7 @@ public class UsbApiManager {
                             permit = 1;
                             fd = mDeviceConnection.getFileDescriptor();
                             Log.i(TAG, "fileDescriptor fd:" + fd);
-                            LswFingerApi.lswFingerApiInit();
+                            LswFingerApi.lswFingerApiInit(fd);
                         } else {
                             Log.e(TAG, "UsbManager openDevice failed");
                             //return FingerStatusCode.STATUS_USB_ERROR_ACCESS;

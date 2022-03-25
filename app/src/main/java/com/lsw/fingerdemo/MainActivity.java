@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.lsw.fingerdemo.databinding.ActivityMainBinding;
 
@@ -39,7 +40,10 @@ public class MainActivity extends AppCompatActivity {
         binding.btnOpen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                LswFingerApi.lswFingerApiOpen();
+                if (LswFingerApi.lswFingerApiOpen() == 0) {
+                } else {
+                    Toast.makeText(MainActivity.this, "指纹模组打开失败.", Toast.LENGTH_LONG).show();
+                }
             }
         });
         binding.btnGather.setOnClickListener(new View.OnClickListener() {
@@ -57,7 +61,11 @@ public class MainActivity extends AppCompatActivity {
         binding.btnCal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                LswFingerApi.lswFingerApiCalibration();
+                if (LswFingerApi.lswFingerApiCalibration() == 0) {
+                    Toast.makeText(MainActivity.this, "指纹模组通讯校验成功.", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "指纹模组通讯校验失败.", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
@@ -70,7 +78,23 @@ public class MainActivity extends AppCompatActivity {
         binding.btnTest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                LswFingerApi.lswFingerApiTest();
+                if (LswFingerApi.lswFingerApiTest() == 0) {
+                    Toast.makeText(MainActivity.this, "指纹模组通讯测试成功，可以采集指纹.", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "指纹模组通讯测试失败.", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        binding.btnClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
+        binding.btnGather.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                byte[] rawFinger = LswFingerApi.lswFingerApiGatherRawFinger();
             }
         });
     }
@@ -101,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         LswFingerApi.lswFingerApiClose();
+        System.exit(0);
     }
 
 }

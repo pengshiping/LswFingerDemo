@@ -5,8 +5,9 @@
 #ifndef LSWFINGERDEMO_LSWFINGERUSB_H
 #define LSWFINGERDEMO_LSWFINGERUSB_H
 
+#include "common.h"
 
-int FingerApiInit();
+int FingerApiInit(int fd);
 
 int FingerApiOpen();
 
@@ -14,7 +15,7 @@ int FingerApiClose();
 
 int FingerApiTest();
 
-int FingerApiGatherRawFinger();
+unsigned char* FingerApiGatherRawFinger();
 
 int FingerApiGatherFingerDelBg();
 
