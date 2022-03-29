@@ -20,7 +20,7 @@
 
     <Button
         android:id="@+id/btnClose"
-        android:layout_width="106dp"
+        android:layout_width="110dp"
         android:layout_height="48dp"
         android:layout_alignBaseline="@+id/btnOpen"
         android:layout_alignBottom="@+id/btnOpen"
@@ -31,7 +31,7 @@
         android:layout_marginBottom="50dp"
         android:layout_toRightOf="@+id/btnOpen"
         android:background="@drawable/button_selector_other"
-        android:text="退出程序"
+        android:text="关闭指纹仪"
         android:textColor="#FCFCFC"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -73,12 +73,12 @@
         android:background="@drawable/button_selector"
         android:text="采集指纹(原始图)"
         android:textColor="#FCFCFC"
-        app:layout_constraintBottom_toTopOf="@+id/btnGather2"
+        app:layout_constraintBottom_toTopOf="@+id/btnStopGather"
         app:layout_constraintStart_toStartOf="@+id/btnOpen"
         app:layout_constraintTop_toBottomOf="@+id/btnOpen" />
 
     <Button
-        android:id="@+id/btnGather2"
+        android:id="@+id/btnStopGather"
         android:layout_width="100dp"
         android:layout_height="60dp"
         android:layout_below="@+id/btnClose"
@@ -87,7 +87,7 @@
         android:layout_marginTop="20dp"
         android:layout_marginBottom="20dp"
         android:background="@drawable/button_selector"
-        android:text="采集指纹(去背景)"
+        android:text="停止采集"
         android:textColor="#FCFCFC"
         app:layout_constraintBottom_toTopOf="@+id/btnCal"
         app:layout_constraintStart_toStartOf="@+id/btnGather"
@@ -106,12 +106,12 @@
         android:text="校准"
         android:textColor="#FCFCFC"
         app:layout_constraintBottom_toTopOf="@+id/fpImage"
-        app:layout_constraintStart_toStartOf="@+id/btnGather2"
-        app:layout_constraintTop_toBottomOf="@+id/btnGather2" />
+        app:layout_constraintStart_toStartOf="@+id/btnStopGather"
+        app:layout_constraintTop_toBottomOf="@+id/btnStopGather" />
 
     <Button
         android:id="@+id/btnVersion"
-        android:layout_width="106dp"
+        android:layout_width="110dp"
         android:layout_height="48dp"
         android:layout_alignLeft="@+id/fpImage"
         android:layout_marginStart="10dp"
@@ -129,7 +129,7 @@
 
     <Button
         android:id="@+id/btnTest"
-        android:layout_width="106dp"
+        android:layout_width="110dp"
         android:layout_height="48dp"
         android:layout_alignBaseline="@+id/btnVersion"
         android:layout_alignBottom="@+id/btnVersion"

@@ -17,6 +17,8 @@ int FingerApiTest();
 
 unsigned char* FingerApiGatherRawFinger();
 
+unsigned char* FingerApiGatherDelBgFinger();
+
 int FingerApiGatherFingerDelBg();
 
 int FingerApiCalibration();

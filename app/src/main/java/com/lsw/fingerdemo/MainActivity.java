@@ -2,33 +2,35 @@ package com.lsw.fingerdemo;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
-
 import com.lsw.fingerdemo.databinding.ActivityMainBinding;
+import java.io.File;
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
 
     private ActivityMainBinding binding;
-
     private UsbApiManager mUsbApiManager = null;
     private Context mContext;
-
+    private boolean mGatherThreadIsRun = false;
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private final String TAG = "MainActivity";
     private static String[] PERMISSIONS_STORAGE = {"android.permission.READ_EXTERNAL_STORAGE",
-            "android.permission.WRITE_EXTERNAL_STORAGE" };
+            "android.permission.WRITE_EXTERNAL_STORAGE"};
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         initClickListener();
@@ -41,30 +43,25 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (LswFingerApi.lswFingerApiOpen() == 0) {
+                    setTextInfo("指纹模组打开成功.");
                 } else {
-                    Toast.makeText(MainActivity.this, "指纹模组打开失败.", Toast.LENGTH_LONG).show();
+                    setTextInfo("指纹模组打开失败.");
                 }
             }
         });
-        binding.btnGather.setOnClickListener(new View.OnClickListener() {
+        binding.btnStopGather.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                LswFingerApi.lswFingerApiGatherRawFinger();
-            }
-        });
-        binding.btnGather2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                LswFingerApi.lswFingerApiGatherFingerDelBg();
+                mGatherThreadIsRun = false;
             }
         });
         binding.btnCal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (LswFingerApi.lswFingerApiCalibration() == 0) {
-                    Toast.makeText(MainActivity.this, "指纹模组通讯校验成功.", Toast.LENGTH_LONG).show();
+                    setTextInfo("指纹模组通讯校验成功.");
                 } else {
-                    Toast.makeText(MainActivity.this, "指纹模组通讯校验失败.", Toast.LENGTH_LONG).show();
+                    setTextInfo("指纹模组通讯校验失败.");
                 }
             }
         });
@@ -79,24 +76,82 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (LswFingerApi.lswFingerApiTest() == 0) {
-                    Toast.makeText(MainActivity.this, "指纹模组通讯测试成功，可以采集指纹.", Toast.LENGTH_LONG).show();
+                    setTextInfo("指纹模组通讯测试成功，可以采集指纹.");
                 } else {
-                    Toast.makeText(MainActivity.this, "指纹模组通讯测试失败.", Toast.LENGTH_LONG).show();
+                    setTextInfo("指纹模组通讯测试失败.");
                 }
             }
         });
         binding.btnClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                finish();
+                if (LswFingerApi.lswFingerApiClose() == 0) {
+                    setTextInfo("指纹模组已经关闭");
+                }
             }
         });
         binding.btnGather.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                byte[] rawFinger = LswFingerApi.lswFingerApiGatherRawFinger();
+                startGatherRawThread();
             }
         });
+    }
+
+    private void setTextInfo(String text) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String info = binding.textView1.getText() + "\n" + text;
+                binding.textView1.setText(info);
+            }
+        });
+    }
+
+
+    private void startGatherRawThread() {
+        mGatherThreadIsRun = true;
+        setTextInfo("开始采集指纹.");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (mGatherThreadIsRun) {
+                    byte[] rawFinger = LswFingerApi.lswFingerApiGatherRawFinger();
+                    if (rawFinger != null) {
+                        //Log.i(TAG, "lswFingerApiGatherRawFinger success");
+                    } else {
+                        //Log.e(TAG, "lswFingerApiGatherRawFinger failed regather.");
+                        continue;
+                    }
+                    String bmpfilepath = Environment.getExternalStorageDirectory().getAbsolutePath();
+                    //Log.e(TAG, "" + bmpfilepath);
+                    if (rawFinger.length > 0) {
+                        String filename = bmpfilepath + "/a.bmp";
+                        androidbmp mandroidbmp = new androidbmp();
+                        File mFile = new File(filename);
+                        if (mFile.exists()) {
+                            mFile.delete();
+                        }
+                        try {
+                            mandroidbmp.save_bmp(filename, rawFinger);
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Bitmap bm = BitmapFactory.decodeFile(filename);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                binding.fpImage.setImageBitmap(bm);
+                            }
+                        });
+                    } else {
+                        Log.e(TAG, "can not get pic!!!");
+                    }
+                }
+                setTextInfo("停止采集指纹.");
+            }
+        }).start();
     }
 
     private void initUsbManager() {
@@ -115,8 +170,7 @@ public class MainActivity extends AppCompatActivity {
                         PERMISSIONS_STORAGE,
                         REQUEST_EXTERNAL_STORAGE);
             }
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

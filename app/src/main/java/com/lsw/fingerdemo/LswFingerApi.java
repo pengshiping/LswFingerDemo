@@ -16,7 +16,7 @@ public class LswFingerApi {
 
     public static native byte[] lswFingerApiGatherRawFinger();
 
-    public static native int lswFingerApiGatherFingerDelBg();
+    public static native byte[] lswFingerApiGatherDelBgFinger();
 
     public static native int lswFingerApiCalibration();
 
