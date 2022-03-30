@@ -83,14 +83,16 @@ JNIEXPORT jint JNICALL
 Java_com_lsw_fingerdemo_LswFingerApi_lswFingerDownloadFeature0(JNIEnv *env, jclass clazz,
                                                                jbyteArray feature_buffer,
                                                                jint feature_length) {
-    return FingerDownloadFeature0((unsigned char *) feature_buffer, feature_length);
+    jbyte* bBuffer = env->GetByteArrayElements(feature_buffer, 0);
+    return FingerDownloadFeature0((unsigned char *) bBuffer, feature_length);
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_lsw_fingerdemo_LswFingerApi_lswFingerDownloadFeature1(JNIEnv *env, jclass clazz,
                                                                jbyteArray feature_buffer) {
-    return FingerDownloadFeature1((unsigned char *) feature_buffer);
+    jbyte* bBuffer = env->GetByteArrayElements(feature_buffer, 0);
+    return FingerDownloadFeature1((unsigned char *) bBuffer);
 }
 
 extern "C"

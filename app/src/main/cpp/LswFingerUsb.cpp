@@ -43,13 +43,13 @@ unsigned char cal_sum_checkcode(unsigned char *pBuf, int nLen) {
 }
 
 void printfarray(unsigned char *array, int length) {
-//    char printstr[512];
-//    memset(printstr, 0, 512);
-//    sprintf(printstr, "[%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x]", array[0], array[1], array[2],
-//            array[3],
-//            array[4], array[5], array[6], array[7], array[8], array[9], array[10], array[11],
-//            array[12]);\
-//    LOGD("%s", printstr);
+    char printstr[512];
+    memset(printstr, 0, 512);
+    sprintf(printstr, "[%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x]", array[0], array[1], array[2],
+            array[3],
+            array[4], array[5], array[6], array[7], array[8], array[9], array[10], array[11],
+            array[12]);\
+    LOGD("%s", printstr);
 }
 
 //采用bulk端点发送数据
@@ -695,7 +695,7 @@ int FingerDownloadFeature0(unsigned char *featureBuffer, int featureLength) {
 
     int packNum = featureLength / 503;
     int tailNum = featureLength - packNum * 503; //最后一个包的长度
-    for (int i = 0; i < featureLength; i++) {
+    for (int i = 0; i < packNum; i++) {
         memset(downloadBuffer + 8, 0, 504);
         memcpy(downloadBuffer + 8, featureBuffer + i * 503, 503);
         downloadBuffer[512] = cal_sum_checkcode(downloadBuffer + 1, 512);
@@ -706,6 +706,17 @@ int FingerDownloadFeature0(unsigned char *featureBuffer, int featureLength) {
             LOGE("FingerDownloadFeature0 failed.");
             return -1;
         }
+
+        uint8_t recv_cmd[512];
+        memset(recv_cmd, 0, 512);
+        ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 2);
+        if (ret == 0) {
+            LOGD("FingerDownloadFeature0 recv cmd sucess, length: %d bytes. \n", size);
+            printfarray(recv_cmd, 13);
+        } else {
+            LOGD("FingerDownloadFeature0 recv cmd faild, err: %s\n", libusb_error_name(ret));
+        }
+
     }
     memset(downloadBuffer + 8, 0, 504);
     memcpy(downloadBuffer + 8, featureBuffer + packNum * 503, tailNum);//最后一个包
@@ -774,7 +785,6 @@ int FingerDownloadFeature1(unsigned char *featureBuffer) {
     if (ret == 0) {
         LOGD("recv cmd sucess, length: %d bytes. \n", size);
         printfarray(recv_cmd, 13);
-        return 0;
     } else {
         LOGD("recv cmd faild, err: %s\n", libusb_error_name(ret));
     }
@@ -802,9 +812,9 @@ int FingerFeatureMatch(unsigned char *match_result) {
 
     ret = bulk_send(feature_match_cmd, 512);
     if (ret == 0) {
-        LOGD("feature_match_cmd success.");
+        LOGD("feature_match_cmd send success.");
     } else {
-        LOGE("feature_match_cmd failed.");
+        LOGE("feature_match_cmd send failed.");
         return -1;
     }
 

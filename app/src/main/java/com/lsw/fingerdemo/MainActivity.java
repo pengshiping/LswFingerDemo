@@ -69,7 +69,8 @@ public class MainActivity extends AppCompatActivity {
         binding.btnVersion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                LswFingerApi.lswFingerApiVersion();
+                //LswFingerApi.lswFingerApiVersion();
+                featureMatchTest();
             }
         });
         binding.btnTest.setOnClickListener(new View.OnClickListener() {
@@ -178,6 +179,42 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void featureMatchTest() {
+        byte[] feature0 = FingerUtils.getFeature0();
+        byte[] feature1 = FingerUtils.getFeature1();
+        LswFingerApi.lswFingerDownloadFeature0(feature0, 512);
+        LswFingerApi.lswFingerDownloadFeature1(feature1);
+        byte[] score = LswFingerApi.lswFingerFeatureMatch();
+        if (score != null) {
+            Log.i(TAG, "featureMatchTest score:" + score[0]);
+        } else {
+            Log.e(TAG, "featureMatchTest failed.");
+        }
+
+//        byte[] image = FingerUtils.getFingerImage();
+//        LswFingerApi.lswFingerDownloadImage(image);
+//        byte[] score = LswFingerApi.lswFingerImageMatch();
+//        if (score != null) {
+//            Log.i(TAG, "imageMatchTest score:" + score[0] + "," + score[1]);
+//        } else {
+//            Log.e(TAG, "imageMatchTest failed.");
+//        }
+
+    }
+
+    private void imageMatchTest() {
+        byte[] feature0 = FingerUtils.getFeature0();
+        byte[] image = FingerUtils.getFingerImage();
+        LswFingerApi.lswFingerDownloadFeature0(feature0, 512);
+        LswFingerApi.lswFingerDownloadImage(image);
+        byte[] score = LswFingerApi.lswFingerImageMatch();
+        if (score != null) {
+            Log.i(TAG, "imageMatchTest score:" + score[0] + "," + score[1]);
+        } else {
+            Log.e(TAG, "featureMatchTest failed.");
         }
     }
 
