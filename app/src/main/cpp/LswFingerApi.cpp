@@ -15,8 +15,6 @@
 #include <malloc.h>
 
 
-
-
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_lsw_fingerdemo_LswFingerApi_lswFingerApiInit(JNIEnv *env, jclass clazz, jint fd) {
@@ -60,30 +58,67 @@ JNIEXPORT jbyteArray JNICALL
 Java_com_lsw_fingerdemo_LswFingerApi_lswFingerApiGatherRawFinger(JNIEnv *env, jclass clazz) {
     //LOGD("lswFingerApiGatherRawFinger");
     jbyteArray dataArray = NULL;
-    unsigned char* fingerBuffer = FingerApiGatherRawFinger();
-    if (fingerBuffer==NULL) {
-       // LOGE("FingerApiGatherRawFinger error");
+    unsigned char *fingerBuffer = FingerApiGatherRawFinger();
+    if (fingerBuffer == NULL) {
+        // LOGE("FingerApiGatherRawFinger error");
     } else {
-       // LOGI("FingerApiGatherRawFinger success");
+        // LOGI("FingerApiGatherRawFinger success");
         dataArray = env->NewByteArray(92160);
-        env->SetByteArrayRegion(dataArray,0,92160, (jbyte *)fingerBuffer);
+        env->SetByteArrayRegion(dataArray, 0, 92160, (jbyte *) fingerBuffer);
         free(fingerBuffer);
     }
     return dataArray;
 }
+
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_lsw_fingerdemo_LswFingerApi_lswFingerDownloadImage(JNIEnv *env, jclass clazz,
+                                                            jbyteArray image_buffer) {
+    return FingerDownloadImage((unsigned char *) image_buffer);
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_lsw_fingerdemo_LswFingerApi_lswFingerDownloadFeature0(JNIEnv *env, jclass clazz,
+                                                               jbyteArray feature_buffer,
+                                                               jint feature_length) {
+    return FingerDownloadFeature0((unsigned char *) feature_buffer, feature_length);
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_lsw_fingerdemo_LswFingerApi_lswFingerDownloadFeature1(JNIEnv *env, jclass clazz,
+                                                               jbyteArray feature_buffer) {
+    return FingerDownloadFeature1((unsigned char *) feature_buffer);
+}
+
 extern "C"
 JNIEXPORT jbyteArray JNICALL
-Java_com_lsw_fingerdemo_LswFingerApi_lswFingerApiGatherDelBgFinger(JNIEnv *env, jclass clazz) {
-    LOGD("lswFingerApiGatherDelBgFinger");
-    jbyteArray dataArray = NULL;
-    unsigned char* fingerBuffer = FingerApiGatherDelBgFinger();
-    if (fingerBuffer==NULL) {
-        LOGE("FingerApiGatherRawFinger error");
+Java_com_lsw_fingerdemo_LswFingerApi_lswFingerFeatureMatch(JNIEnv *env, jclass clazz) {
+    unsigned char matchResult[1];
+    memset(matchResult, 0, 1);
+    int ret = FingerFeatureMatch((unsigned char *) matchResult);
+    if (ret == 0) {
+        jbyteArray dataArray = env->NewByteArray(1);
+        env->SetByteArrayRegion(dataArray, 0, 1, (jbyte *) matchResult);
+        return dataArray;
     } else {
-        LOGI("FingerApiGatherRawFinger success");
-        dataArray = env->NewByteArray(92160);
-        env->SetByteArrayRegion(dataArray,0,92160, (jbyte *)fingerBuffer);
-        free(fingerBuffer);
+        return NULL;
     }
-    return dataArray;
+}
+
+extern "C"
+JNIEXPORT jbyteArray JNICALL
+Java_com_lsw_fingerdemo_LswFingerApi_lswFingerImageMatch(JNIEnv *env, jclass clazz) {
+    unsigned char matchResult[2];
+    memset(matchResult, 0, 2);
+    int ret = FingerImageMatch((unsigned char *) matchResult);
+    if (ret == 0) {
+        jbyteArray dataArray = env->NewByteArray(2);
+        env->SetByteArrayRegion(dataArray, 0, 2, (jbyte *) matchResult);
+        return dataArray;
+    } else {
+        return NULL;
+    }
 }

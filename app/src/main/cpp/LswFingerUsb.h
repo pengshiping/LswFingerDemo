@@ -17,13 +17,21 @@ int FingerApiTest();
 
 unsigned char* FingerApiGatherRawFinger();
 
-unsigned char* FingerApiGatherDelBgFinger();
-
-int FingerApiGatherFingerDelBg();
-
 int FingerApiCalibration();
 
 int FingerApiVersion();
+
+
+//以下是指纹比对的
+int FingerDownloadImage(unsigned char * imageBuffer);
+
+int FingerDownloadFeature0(unsigned char* featureBuffer, int featureLength);
+
+int FingerDownloadFeature1(unsigned char* featureBuffer);
+
+int FingerFeatureMatch(unsigned char* match_result);
+
+int FingerImageMatch(unsigned char* match_result);
 
 
 #endif //LSWFINGERDEMO_LSWFINGERUSB_H

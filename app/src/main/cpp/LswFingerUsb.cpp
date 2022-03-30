@@ -23,65 +23,58 @@ unsigned char finger_img_buffer[IMAGElENGTH];//256 * 360 = 92160字节
 
 libusb_device_handle *dev_handle;
 
-unsigned char cal_xor_checkcode(unsigned char *pBuf, int nLen)
-{
+unsigned char cal_xor_checkcode(unsigned char *pBuf, int nLen) {
     int i;
     unsigned char ret = 0;
-    for (i = 0; i < nLen; i++)
-    {
+    for (i = 0; i < nLen; i++) {
         ret ^= pBuf[i];
     }
     return ret;
 }
 
-unsigned char cal_sum_checkcode(unsigned char *pBuf, int nLen)
-{
+unsigned char cal_sum_checkcode(unsigned char *pBuf, int nLen) {
     int i;
     unsigned char ret = 0;
-    for (i = 0; i < nLen; i++)
-    {
+    for (i = 0; i < nLen; i++) {
         ret += pBuf[i];
     }
     ret = ~ret;
     return ret;
 }
 
-void printfarray(unsigned char* array, int length)
-{
-    char printstr[512];
-    memset(printstr, 0, 512);
-    sprintf(printstr, "[%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x]", array[0],array[1], array[2],array[3],
-            array[4],array[5], array[6],array[7], array[8],array[9], array[10],array[11], array[12]);\
-    LOGD("%s", printstr);
+void printfarray(unsigned char *array, int length) {
+//    char printstr[512];
+//    memset(printstr, 0, 512);
+//    sprintf(printstr, "[%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x]", array[0], array[1], array[2],
+//            array[3],
+//            array[4], array[5], array[6], array[7], array[8], array[9], array[10], array[11],
+//            array[12]);\
+//    LOGD("%s", printstr);
 }
 
 //采用bulk端点发送数据
-static int bulk_send(unsigned char *buf, int num)
-{
+static int bulk_send(unsigned char *buf, int num) {
     int size;
     int rec;
     // LOGD("bulk send length: %d\n", num);
     rec = libusb_bulk_transfer(dev_handle, BULK_SEND_EP, buf, num, &size, 10);
     // LOGD("libusb_bulk_transfer return: %d\n", rec);
-    if(rec == 0) {
+    if (rec == 0) {
         // LOGD("libusb_bulk_transfer send sucess,length: %d bytes\n", size);
-    }
-    else{
+    } else {
         //LOGD("libusb_bulk_transfer send faild, err: %s\n", libusb_error_name(rec));
     }
     return rec;
 }
 
-static void print_endpoint_comp(const struct libusb_ss_endpoint_companion_descriptor *ep_comp)
-{
+static void print_endpoint_comp(const struct libusb_ss_endpoint_companion_descriptor *ep_comp) {
     LOGD("      USB 3.0 Endpoint Companion:\n");
     LOGD("        bMaxBurst:           %u\n", ep_comp->bMaxBurst);
     LOGD("        bmAttributes:        %02xh\n", ep_comp->bmAttributes);
     LOGD("        wBytesPerInterval:   %u\n", ep_comp->wBytesPerInterval);
 }
 
-static void print_endpoint(const struct libusb_endpoint_descriptor *endpoint)
-{
+static void print_endpoint(const struct libusb_endpoint_descriptor *endpoint) {
     int i, ret;
 
     LOGD("      Endpoint:\n");
@@ -109,8 +102,7 @@ static void print_endpoint(const struct libusb_endpoint_descriptor *endpoint)
     }
 }
 
-static void print_altsetting(const struct libusb_interface_descriptor *interface)
-{
+static void print_altsetting(const struct libusb_interface_descriptor *interface) {
     uint8_t i;
 
     LOGD("    Interface:\n");
@@ -126,15 +118,13 @@ static void print_altsetting(const struct libusb_interface_descriptor *interface
         print_endpoint(&interface->endpoint[i]);
 }
 
-static void print_2_0_ext_cap(struct libusb_usb_2_0_extension_descriptor *usb_2_0_ext_cap)
-{
+static void print_2_0_ext_cap(struct libusb_usb_2_0_extension_descriptor *usb_2_0_ext_cap) {
     LOGD("    USB 2.0 Extension Capabilities:\n");
     LOGD("      bDevCapabilityType:    %u\n", usb_2_0_ext_cap->bDevCapabilityType);
     LOGD("      bmAttributes:          %08xh\n", usb_2_0_ext_cap->bmAttributes);
 }
 
-static void print_ss_usb_cap(struct libusb_ss_usb_device_capability_descriptor *ss_usb_cap)
-{
+static void print_ss_usb_cap(struct libusb_ss_usb_device_capability_descriptor *ss_usb_cap) {
     LOGD("    USB 3.0 Capabilities:\n");
     LOGD("      bDevCapabilityType:    %u\n", ss_usb_cap->bDevCapabilityType);
     LOGD("      bmAttributes:          %02xh\n", ss_usb_cap->bmAttributes);
@@ -144,8 +134,7 @@ static void print_ss_usb_cap(struct libusb_ss_usb_device_capability_descriptor *
     LOGD("      bU2devExitLat:         %u\n", ss_usb_cap->bU2DevExitLat);
 }
 
-static void print_bos(libusb_device_handle *handle)
-{
+static void print_bos(libusb_device_handle *handle) {
     struct libusb_bos_descriptor *bos;
     uint8_t i;
     int ret;
@@ -185,16 +174,14 @@ static void print_bos(libusb_device_handle *handle)
     libusb_free_bos_descriptor(bos);
 }
 
-static void print_interface(const struct libusb_interface *interface)
-{
+static void print_interface(const struct libusb_interface *interface) {
     int i;
 
     for (i = 0; i < interface->num_altsetting; i++)
         print_altsetting(&interface->altsetting[i]);
 }
 
-static void print_configuration(struct libusb_config_descriptor *config)
-{
+static void print_configuration(struct libusb_config_descriptor *config) {
     uint8_t i;
 
     LOGD("  Configuration:\n");
@@ -209,8 +196,7 @@ static void print_configuration(struct libusb_config_descriptor *config)
         print_interface(&config->interface[i]);
 }
 
-static void print_device(libusb_device *dev, libusb_device_handle *handle)
-{
+static void print_device(libusb_device *dev, libusb_device_handle *handle) {
     LOGD("print_device");
 
     struct libusb_device_descriptor desc;
@@ -221,12 +207,23 @@ static void print_device(libusb_device *dev, libusb_device_handle *handle)
     uint8_t i;
 
     switch (libusb_get_device_speed(dev)) {
-        case LIBUSB_SPEED_LOW:		speed = "1.5M"; break;
-        case LIBUSB_SPEED_FULL:		speed = "12M"; break;
-        case LIBUSB_SPEED_HIGH:		speed = "480M"; break;
-        case LIBUSB_SPEED_SUPER:	speed = "5G"; break;
-        case LIBUSB_SPEED_SUPER_PLUS:	speed = "10G"; break;
-        default:			speed = "Unknown";
+        case LIBUSB_SPEED_LOW:
+            speed = "1.5M";
+            break;
+        case LIBUSB_SPEED_FULL:
+            speed = "12M";
+            break;
+        case LIBUSB_SPEED_HIGH:
+            speed = "480M";
+            break;
+        case LIBUSB_SPEED_SUPER:
+            speed = "5G";
+            break;
+        case LIBUSB_SPEED_SUPER_PLUS:
+            speed = "10G";
+            break;
+        default:
+            speed = "Unknown";
     }
 
     ret = libusb_get_device_descriptor(dev, &desc);
@@ -244,21 +241,23 @@ static void print_device(libusb_device *dev, libusb_device_handle *handle)
 
     if (handle) {
         if (desc.iManufacturer) {
-            ret = libusb_get_string_descriptor_ascii(handle, desc.iManufacturer, string, sizeof(string));
+            ret = libusb_get_string_descriptor_ascii(handle, desc.iManufacturer, string,
+                                                     sizeof(string));
             if (ret > 0)
-                LOGD("  Manufacturer:              %s\n", (char *)string);
+                LOGD("  Manufacturer:              %s\n", (char *) string);
         }
 
         if (desc.iProduct) {
             ret = libusb_get_string_descriptor_ascii(handle, desc.iProduct, string, sizeof(string));
             if (ret > 0)
-                LOGD("  Product:                   %s\n", (char *)string);
+                LOGD("  Product:                   %s\n", (char *) string);
         }
 
         if (desc.iSerialNumber && verbose) {
-            ret = libusb_get_string_descriptor_ascii(handle, desc.iSerialNumber, string, sizeof(string));
+            ret = libusb_get_string_descriptor_ascii(handle, desc.iSerialNumber, string,
+                                                     sizeof(string));
             if (ret > 0)
-                LOGD("  Serial Number:             %s\n", (char *)string);
+                LOGD("  Serial Number:             %s\n", (char *) string);
         }
     }
 
@@ -282,8 +281,7 @@ static void print_device(libusb_device *dev, libusb_device_handle *handle)
     }
 }
 
-int FingerApiInit(int fd)
-{
+int FingerApiInit(int fd) {
     LOGD("FingerApiInit\n");
     libusb_context *ctx = NULL;
     int r = 0;
@@ -300,7 +298,7 @@ int FingerApiInit(int fd)
     }
     LOGD("libusb_init success.");
     libusb_set_debug(ctx, LIBUSB_LOG_LEVEL_WARNING);
-    r = libusb_wrap_sys_device(ctx, (intptr_t)fd, &dev_handle);
+    r = libusb_wrap_sys_device(ctx, (intptr_t) fd, &dev_handle);
     if (r < 0) {
         LOGD("libusb_wrap_sys_device failed: %d\n", r);
         return r;
@@ -312,27 +310,24 @@ int FingerApiInit(int fd)
     print_device(libusb_get_device(dev_handle), dev_handle);
 
     r = libusb_kernel_driver_active(dev_handle, 0);
-    if(r == 0)  //ok
+    if (r == 0)  //ok
     {
         LOGD("libusb_kernel_driver_active is ok.");
-    }
-    else if(r == 1)
-    {
+    } else if (r == 1) {
         LOGD("Kernel driver is active, now try detached\n");
-        if(libusb_detach_kernel_driver(dev_handle, 0) == 0) //detach it
+        if (libusb_detach_kernel_driver(dev_handle, 0) == 0) //detach it
             LOGD("Kernel driver is detached!\n");
-        else{
+        else {
             LOGD("libusb_detach_kernel_driver, err:%s\n", libusb_error_name(r));
             return -1;
         }
-    }
-    else{
+    } else {
         LOGD("libusb_kernel_driver_active, err:%s\n", libusb_error_name(r));
         return -1;
     }
 
     r = libusb_claim_interface(dev_handle, 0); //claim interface 0 ,stm32采用接口0
-    if(r < 0) {
+    if (r < 0) {
         LOGD("cannot claim interface, err:%s\n", libusb_error_name(r));
         return -1;
     } else {
@@ -342,8 +337,7 @@ int FingerApiInit(int fd)
     return 0;
 }
 
-int FingerApiOpen()
-{
+int FingerApiOpen() {
     int ret = -1;
     int size;
     uint8_t open_cmd[512];
@@ -356,34 +350,28 @@ int FingerApiOpen()
     open_cmd[4] = 0x01;
     open_cmd[6] = 0x04;
 
-    open_cmd[7] = cal_xor_checkcode(open_cmd+1, 6); //0xC9;
-    open_cmd[12] = cal_sum_checkcode(open_cmd+1, 12);//0x21;
+    open_cmd[7] = cal_xor_checkcode(open_cmd + 1, 6); //0xC9;
+    open_cmd[12] = cal_sum_checkcode(open_cmd + 1, 12);//0x21;
 
 
     LOGD("send_open_cmd");
     printfarray(open_cmd, 13);
 
     ret = bulk_send(open_cmd, 512);
-    if (ret == 0)
-    {
+    if (ret == 0) {
         LOGD("send_open_cmd success.");
-    }
-    else
-    {
+    } else {
         LOGE("send_open_cmd failed.");
         return -1;
     }
     uint8_t recv_cmd[512];
     memset(recv_cmd, 0, 512);
     ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 2);
-    if (ret == 0)
-    {
+    if (ret == 0) {
         LOGD("recv cmd sucess, length: %d bytes. \n", size);
         printfarray(recv_cmd, 13);
         return 0;
-    }
-    else
-    {
+    } else {
         LOGD("recv cmd faild, err: %s\n", libusb_error_name(ret));
     }
     return -1;
@@ -418,14 +406,11 @@ int FingerApiClose() {
     uint8_t recv_cmd[512];
     memset(recv_cmd, 0, 512);
     ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 2);
-    if (ret == 0)
-    {
+    if (ret == 0) {
         LOGD("recv FingerApiClose sucess, length: %d bytes. \n", size);
         printfarray(recv_cmd, 13);
         return 0;
-    }
-    else
-    {
+    } else {
         LOGD("recv cmd faild, err: %s\n", libusb_error_name(ret));
     }
     return -1;
@@ -470,22 +455,18 @@ int FingerApiTest() {
     uint8_t recv_cmd[512];
     memset(recv_cmd, 0, 512);
     ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 2);
-    if (ret == 0)
-    {
+    if (ret == 0) {
         LOGD("recv cmd sucess, length: %d bytes. \n", size);
         printfarray(recv_cmd, 13);
         return 0;
-    }
-    else
-    {
+    } else {
         LOGD("recv cmd faild, err: %s\n", libusb_error_name(ret));
     }
     return -1;
 }
 
 //从指纹仪读取上一次采集的图像到上位机
-static unsigned char* send_obtain_finger_img_cmd()
-{
+static unsigned char *send_obtain_finger_img_cmd() {
     int ret = -1;
     uint8_t version_cmd[512];
     memset(version_cmd, 0, 512);
@@ -499,20 +480,17 @@ static unsigned char* send_obtain_finger_img_cmd()
 
     version_cmd[6] = 0x01;
 
-    version_cmd[7] = cal_xor_checkcode(version_cmd+1, 6);
+    version_cmd[7] = cal_xor_checkcode(version_cmd + 1, 6);
     version_cmd[8] = 0x00;//包序号，从0开始，读181次，每次508字节
-    version_cmd[9] = cal_sum_checkcode(version_cmd+1, 9);
+    version_cmd[9] = cal_sum_checkcode(version_cmd + 1, 9);
 
     //LOGD("send_obtain_finger_img_cmd");
     //printfarray(version_cmd, 13);
 
     ret = bulk_send(version_cmd, 512);
-    if (ret == 0)
-    {
-       // LOGD("send_obtain_finger_img_cmd success.");
-    }
-    else
-    {
+    if (ret == 0) {
+        // LOGD("send_obtain_finger_img_cmd success.");
+    } else {
         if (ret != LIBUSB_ERROR_TIMEOUT) { //不是超时才打日志
             LOGE("send_obtain_finger_img_cmd failed ret:%d.", ret);
         }
@@ -522,42 +500,36 @@ static unsigned char* send_obtain_finger_img_cmd()
     int size;
     int rec;
     uint8_t recv_cmd[512];   //打开指纹仪 响应包
-    unsigned char* fingerBuffer = (unsigned char*)malloc(92160);
+    unsigned char *fingerBuffer = (unsigned char *) malloc(92160);
     if (fingerBuffer != NULL) {
         memset(fingerBuffer, 0, 92160);
     }
-    while(1)
-    {
+    while (1) {
         memset(recv_cmd, 0, 512);
         rec = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 2);
-        if(rec == 0)
-        {
-           // LOGD("recv cmd sucess, length: %d bytes. \n", size);
+        if (rec == 0) {
+            // LOGD("recv cmd sucess, length: %d bytes. \n", size);
             //printfarray(recv_cmd, 13);
-            if (recv_cmd[0]== 0xf0 && recv_cmd[1]== 1 &&recv_cmd[2]== 0xfc &&recv_cmd[3]== 0x02)
-            {
-                memcpy(fingerBuffer + image_number*508, recv_cmd+4, 508);
+            if (recv_cmd[0] == 0xf0 && recv_cmd[1] == 1 && recv_cmd[2] == 0xfc &&
+                recv_cmd[3] == 0x02) {
+                memcpy(fingerBuffer + image_number * 508, recv_cmd + 4, 508);
                 image_number++;
-              //  LOGD("image number:%d", image_number);
+                //  LOGD("image number:%d", image_number);
             }
-            if (recv_cmd[0]== 0xf0 && recv_cmd[1]== 0 &&recv_cmd[2]== 0xd4 &&recv_cmd[3]== 0x01)
-            {
+            if (recv_cmd[0] == 0xf0 && recv_cmd[1] == 0 && recv_cmd[2] == 0xd4 &&
+                recv_cmd[3] == 0x01) {
                 //最后一包只有212个字节
-                memcpy(fingerBuffer + image_number*508, recv_cmd+4, 212);
+                memcpy(fingerBuffer + image_number * 508, recv_cmd + 4, 212);
                 image_number++;
                 //LOGD("the last image number:%d", image_number);
                 LOGD("gather finger image.", image_number);
                 image_number = 0;
                 return fingerBuffer;
             }
+        } else {
+            LOGD("recv cmd faild, err: %s, line:%d.\n", libusb_error_name(rec), __LINE__);
         }
-        else
-        {
-            if (rec != LIBUSB_ERROR_TIMEOUT) { //不是超时才打日志
-                LOGD("recv cmd faild, err: %s\n", libusb_error_name(rec));
-            }
-        }
-    //    LOGD("**********************************************************************");
+        //    LOGD("**********************************************************************");
 
     }
     return NULL;
@@ -594,24 +566,18 @@ unsigned char *FingerApiGatherRawFinger() {
     uint8_t recv_cmd[512];
     memset(recv_cmd, 0, 512);
     ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 2);
-    if (ret == 0)
-    {
+    if (ret == 0) {
         //LOGD("recv cmd sucess, length: %d bytes. \n", size);
-       // printfarray(recv_cmd, 13);
-        unsigned char* fingerBuffer= send_obtain_finger_img_cmd();
-        if (fingerBuffer != NULL)
-        {
-           // LOGD("send_obtain_finger_img_cmd success.");
+        // printfarray(recv_cmd, 13);
+        unsigned char *fingerBuffer = send_obtain_finger_img_cmd();
+        if (fingerBuffer != NULL) {
+            // LOGD("send_obtain_finger_img_cmd success.");
             return fingerBuffer;
-        }
-        else
-        {
+        } else {
             //LOGE("send_obtain_finger_img_cmd failed.");
         }
         return NULL;
-    }
-    else
-    {
+    } else {
         if (ret != LIBUSB_ERROR_TIMEOUT) {
             LOGE("recv cmd faild, err: %s\n", libusb_error_name(ret));
         }
@@ -620,70 +586,8 @@ unsigned char *FingerApiGatherRawFinger() {
 
 }
 
-unsigned char *FingerApiGatherDelBgFinger() {
-    // 扫描一张去掉背景的图像（不做任何图像增强，暂存在指纹仪内）
-    int ret = -1;
-    int size = 0;
-    uint8_t scan_cmd[512];
-    memset(scan_cmd, 0, 512);
 
-    scan_cmd[0] = 0xF0;
-    scan_cmd[1] = 0x6A;
-
-    scan_cmd[2] = 0xB2;
-    scan_cmd[3] = 0x00;
-    scan_cmd[4] = 0x03;
-
-    scan_cmd[7] = cal_xor_checkcode(scan_cmd + 1, 6);
-    scan_cmd[8] = cal_sum_checkcode(scan_cmd + 1, 8);
-
-    LOGD("send_scan_finger_delbgimg_cmd");
-    printfarray(scan_cmd, 13);
-
-    ret = bulk_send(scan_cmd, 512);
-    if (ret == 0) {
-        LOGD("send_scan_finger_delbgimg_cmd success.");
-    } else {
-        LOGE("send_scan_finger_delbgimg_cmd failed.");
-        return NULL;
-    }
-
-    uint8_t recv_cmd[512];
-    memset(recv_cmd, 0, 512);
-    ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 2);
-    if (ret == 0)
-    {
-       // LOGD("recv cmd sucess, length: %d bytes. \n", size);
-        printfarray(recv_cmd, 13);
-        unsigned char* fingerBuffer= send_obtain_finger_img_cmd();
-        if (fingerBuffer != NULL)
-        {
-            //LOGD("send_obtain_finger_img_cmd success.");
-            return fingerBuffer;
-        }
-        else
-        {
-            LOGE("send_obtain_finger_img_cmd failed.");
-        }
-        return NULL;
-    }
-    else
-    {
-        LOGD("recv cmd faild, err: %s\n", libusb_error_name(ret));
-    }
-    return NULL;
-
-}
-
-
-
-int FingerApiGatherFingerDelBg()
-{
-    return 0;
-}
-
-int FingerApiCalibration()
-{
+int FingerApiCalibration() {
     int ret = -1;
     int size;
     uint8_t calibration_cmd[512];
@@ -695,19 +599,16 @@ int FingerApiCalibration()
 
     calibration_cmd[4] = 0x03;
 
-    calibration_cmd[7] = cal_xor_checkcode(calibration_cmd+1, 6);
-    calibration_cmd[8] = cal_sum_checkcode(calibration_cmd+1, 8);
+    calibration_cmd[7] = cal_xor_checkcode(calibration_cmd + 1, 6);
+    calibration_cmd[8] = cal_sum_checkcode(calibration_cmd + 1, 8);
 
     LOGD("send_calibration_cmd");
     printfarray(calibration_cmd, 13);
 
     ret = bulk_send(calibration_cmd, 512);
-    if (ret == 0)
-    {
+    if (ret == 0) {
         LOGD("send_calibration_cmd success.");
-    }
-    else
-    {
+    } else {
         LOGE("send_calibration_cmd failed.");
         return -1;
     }
@@ -715,20 +616,254 @@ int FingerApiCalibration()
     uint8_t recv_cmd[512];
     memset(recv_cmd, 0, 512);
     ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 2);
-    if (ret == 0)
-    {
+    if (ret == 0) {
         LOGD("recv cmd sucess, length: %d bytes. \n", size);
         printfarray(recv_cmd, 13);
         return 0;
-    }
-    else
-    {
+    } else {
         LOGD("recv cmd faild, err: %s\n", libusb_error_name(ret));
     }
     return -1;
 }
 
-int FingerApiVersion()
-{
+int FingerDownloadImage(unsigned char *imageBuffer) {
+    int ret = -1;
+    int size;
+    uint8_t downloadBuffer[512];
+    memset(downloadBuffer, 0, 512);
+
+    downloadBuffer[0] = 0xF0;
+    downloadBuffer[1] = 0x6A;
+
+    downloadBuffer[2] = 0xC3;
+    downloadBuffer[3] = 0x00;
+    downloadBuffer[4] = 0x0C;
+
+    downloadBuffer[7] = cal_xor_checkcode(downloadBuffer + 1, 6);
+
+    for (int i = 0; i < 188; i++) {
+        memset(downloadBuffer + 8, 0, 504);
+        memcpy(downloadBuffer + 8, imageBuffer + i * 503, 503);
+        downloadBuffer[512] = cal_sum_checkcode(downloadBuffer + 1, 512);
+        ret = bulk_send(downloadBuffer, 512);
+        if (ret == 0) {
+            LOGD("FingerDownloadImage success.");
+        } else {
+            LOGE("FingerDownloadImage failed.");
+            return -1;
+        }
+    }
+    memset(downloadBuffer + 8, 0, 504);
+    memcpy(downloadBuffer + 8, imageBuffer + 183 * 503, 111);//最后一个包
+    downloadBuffer[512] = cal_sum_checkcode(downloadBuffer + 1, 512);
+    ret = bulk_send(downloadBuffer, 512);
+    if (ret == 0) {
+        LOGD("FingerDownloadImage last packet success.");
+    } else {
+        LOGE("FingerDownloadImage last packet failed.");
+        return -1;
+    }
+
+    uint8_t recv_cmd[512];
+    memset(recv_cmd, 0, 512);
+    ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 2);
+    if (ret == 0) {
+        LOGD("recv cmd sucess, length: %d bytes. \n", size);
+        printfarray(recv_cmd, 13);
+        return 0;
+    } else {
+        LOGD("recv cmd faild, err: %s\n", libusb_error_name(ret));
+    }
+    return -1;
+}
+
+
+int FingerDownloadFeature0(unsigned char *featureBuffer, int featureLength) {
+    int ret = -1;
+    int size;
+    uint8_t downloadBuffer[512];
+    memset(downloadBuffer, 0, 512);
+
+    downloadBuffer[0] = 0xF0;
+    downloadBuffer[1] = 0x6A;
+
+    downloadBuffer[2] = 0xC3;
+    downloadBuffer[3] = 0x00;
+    downloadBuffer[4] = 0x0D;
+
+    downloadBuffer[7] = cal_xor_checkcode(downloadBuffer + 1, 6);
+
+    int packNum = featureLength / 503;
+    int tailNum = featureLength - packNum * 503; //最后一个包的长度
+    for (int i = 0; i < featureLength; i++) {
+        memset(downloadBuffer + 8, 0, 504);
+        memcpy(downloadBuffer + 8, featureBuffer + i * 503, 503);
+        downloadBuffer[512] = cal_sum_checkcode(downloadBuffer + 1, 512);
+        ret = bulk_send(downloadBuffer, 512);
+        if (ret == 0) {
+            LOGD("FingerDownloadFeature0 success.");
+        } else {
+            LOGE("FingerDownloadFeature0 failed.");
+            return -1;
+        }
+    }
+    memset(downloadBuffer + 8, 0, 504);
+    memcpy(downloadBuffer + 8, featureBuffer + packNum * 503, tailNum);//最后一个包
+    downloadBuffer[512] = cal_sum_checkcode(downloadBuffer + 1, 512);
+    ret = bulk_send(downloadBuffer, 512);
+    if (ret == 0) {
+        LOGD("FingerDownloadFeature0 last packet success.");
+    } else {
+        LOGE("FingerDownloadFeature0 last packet failed.");
+        return -1;
+    }
+
+    uint8_t recv_cmd[512];
+    memset(recv_cmd, 0, 512);
+    ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 2);
+    if (ret == 0) {
+        LOGD("recv cmd sucess, length: %d bytes. \n", size);
+        printfarray(recv_cmd, 13);
+        return 0;
+    } else {
+        LOGD("recv cmd faild, err: %s\n", libusb_error_name(ret));
+    }
+    return -1;
+}
+
+int FingerDownloadFeature1(unsigned char *featureBuffer) {
+    int ret = -1;
+    int size;
+    uint8_t downloadBuffer[512];
+    memset(downloadBuffer, 0, 512);
+
+    downloadBuffer[0] = 0xF0;
+    downloadBuffer[1] = 0x6A;
+
+    downloadBuffer[2] = 0xC3;
+    downloadBuffer[3] = 0x00;
+    downloadBuffer[4] = 0x0E;
+
+    downloadBuffer[7] = cal_xor_checkcode(downloadBuffer + 1, 6);
+
+
+    memset(downloadBuffer + 8, 0, 504);
+    memcpy(downloadBuffer + 8, featureBuffer, 503);
+    downloadBuffer[512] = cal_sum_checkcode(downloadBuffer + 1, 512);
+    ret = bulk_send(downloadBuffer, 512);
+    if (ret == 0) {
+        LOGD("FingerDownloadFeature1 success.");
+    } else {
+        LOGE("FingerDownloadFeature1 failed.");
+        return -1;
+    }
+    memset(downloadBuffer + 8, 0, 504);
+    memcpy(downloadBuffer + 8, featureBuffer + 503, 9);//最后一个包
+    downloadBuffer[512] = cal_sum_checkcode(downloadBuffer + 1, 512);
+    ret = bulk_send(downloadBuffer, 512);
+    if (ret == 0) {
+        LOGD("FingerDownloadFeature1 last packet success.");
+    } else {
+        LOGE("FingerDownloadFeature1 last packet failed.");
+        return -1;
+    }
+
+    uint8_t recv_cmd[512];
+    memset(recv_cmd, 0, 512);
+    ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 2);
+    if (ret == 0) {
+        LOGD("recv cmd sucess, length: %d bytes. \n", size);
+        printfarray(recv_cmd, 13);
+        return 0;
+    } else {
+        LOGD("recv cmd faild, err: %s\n", libusb_error_name(ret));
+    }
+    return -1;
+}
+
+int FingerFeatureMatch(unsigned char *match_result) {
+    int ret = -1;
+    int size;
+    uint8_t feature_match_cmd[512];
+    memset(feature_match_cmd, 0, 512);
+
+    feature_match_cmd[0] = 0xF0;
+    feature_match_cmd[1] = 0x6A;
+
+    feature_match_cmd[2] = 0xC3;
+    feature_match_cmd[3] = 0x00;
+    feature_match_cmd[4] = 0x04;
+
+    feature_match_cmd[7] = cal_xor_checkcode(feature_match_cmd + 1, 6);
+    feature_match_cmd[8] = cal_sum_checkcode(feature_match_cmd + 1, 8);
+
+    LOGD("feature_match_cmd");
+    printfarray(feature_match_cmd, 13);
+
+    ret = bulk_send(feature_match_cmd, 512);
+    if (ret == 0) {
+        LOGD("feature_match_cmd success.");
+    } else {
+        LOGE("feature_match_cmd failed.");
+        return -1;
+    }
+
+    uint8_t recv_cmd[512];
+    memset(recv_cmd, 0, 512);
+    ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 2);
+    if (ret == 0) {
+        LOGD("feature_match_cmd recv cmd sucess, length: %d bytes. \n", size);
+        printfarray(recv_cmd, 13);
+        match_result[0] = recv_cmd[9];
+        return 0;
+    } else {
+        LOGD("feature_match_cmd recv cmd faild, err: %s\n", libusb_error_name(ret));
+    }
+    return -1;
+}
+
+int FingerImageMatch(unsigned char *match_result) {
+    int ret = -1;
+    int size;
+    uint8_t image_match_cmd[512];
+    memset(image_match_cmd, 0, 512);
+
+    image_match_cmd[0] = 0xF0;
+    image_match_cmd[1] = 0x6A;
+
+    image_match_cmd[2] = 0xC3;
+    image_match_cmd[3] = 0x00;
+    image_match_cmd[4] = 0x04;
+
+    image_match_cmd[7] = cal_xor_checkcode(image_match_cmd + 1, 6);
+    image_match_cmd[8] = cal_sum_checkcode(image_match_cmd + 1, 8);
+
+    LOGD("image_match_cmd");
+    printfarray(image_match_cmd, 13);
+
+    ret = bulk_send(image_match_cmd, 512);
+    if (ret == 0) {
+        LOGD("image_match_cmd success.");
+    } else {
+        LOGE("image_match_cmd failed.");
+        return -1;
+    }
+
+    uint8_t recv_cmd[512];
+    memset(recv_cmd, 0, 512);
+    ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 2);
+    if (ret == 0) {
+        LOGD("image_match_cmd recv cmd sucess, length: %d bytes. \n", size);
+        printfarray(recv_cmd, 13);
+        match_result[0] = recv_cmd[9];
+        match_result[1] = recv_cmd[10];
+        return 0;
+    } else {
+        LOGD("image_match_cmd recv cmd faild, err: %s\n", libusb_error_name(ret));
+    }
+    return -1;
+}
+
+int FingerApiVersion() {
     return 0;
 }

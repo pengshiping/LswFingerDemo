@@ -150,6 +150,12 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 setTextInfo("停止采集指纹.");
+                Log.i(TAG, "gather thread is stop.");
+                try {
+                    Thread.sleep(1);
+                }catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }).start();
     }
