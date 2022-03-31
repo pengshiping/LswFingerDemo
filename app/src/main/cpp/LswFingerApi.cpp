@@ -84,7 +84,8 @@ Java_com_lsw_fingerdemo_LswFingerApi_lswFingerDownloadFeature0(JNIEnv *env, jcla
                                                                jbyteArray feature_buffer,
                                                                jint feature_length) {
     jbyte* bBuffer = env->GetByteArrayElements(feature_buffer, 0);
-    return FingerDownloadFeature0((unsigned char *) bBuffer, feature_length);
+    int ret = FingerDownloadFeature0((unsigned char *) bBuffer, feature_length);
+    return ret;
 }
 
 extern "C"

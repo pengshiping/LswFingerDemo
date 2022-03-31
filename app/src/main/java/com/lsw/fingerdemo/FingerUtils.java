@@ -13,7 +13,7 @@ public class FingerUtils {
         try {
             FileInputStream fin = new FileInputStream(new File(filepath + "/fingerdata/left.feat"));
             byte[] buffer = new byte[512];
-            fin.read(buffer);
+            int length = fin.read(buffer, 0, 512);
             return buffer;
         } catch (Exception e) {
             e.printStackTrace();
@@ -25,7 +25,7 @@ public class FingerUtils {
         try {
             FileInputStream fin = new FileInputStream(new File(filepath + "/fingerdata/right.feat"));
             byte[] buffer = new byte[512];
-            fin.read(buffer);
+            int length = fin.read(buffer, 0, 512);
             return buffer;
         } catch (Exception e) {
             e.printStackTrace();
@@ -36,8 +36,8 @@ public class FingerUtils {
     public static byte[] getFingerImage() {
         try {
             FileInputStream fin = new FileInputStream(new File(filepath + "/fingerdata/image.dat"));
-            byte[] buffer = new byte[512];
-            fin.read(buffer);
+            byte[] buffer = new byte[92160];
+            int length = fin.read(buffer);
             return buffer;
         } catch (Exception e) {
             e.printStackTrace();

@@ -67,6 +67,39 @@ static int bulk_send(unsigned char *buf, int num) {
     return rec;
 }
 
+//采用bulk端点发送数据
+static int cmdSwap(unsigned char *buf, int num, unsigned char *recvBuf, int * retSize) {
+    int ret = -1;
+    LOGD("cmdSwap send.");
+    printfarray(buf, 13);
+    ret = libusb_bulk_transfer(dev_handle, BULK_SEND_EP, buf, num, retSize, 10);
+    // LOGD("libusb_bulk_transfer return: %d\n", rec);
+    if (ret == 0) {
+        LOGD("cmdSwap send sucess,length: %d bytes\n", retSize);
+    } else {
+        LOGD("cmdSwap send faild, err: %s\n", libusb_error_name(ret));
+    }
+    LOGD("cmdSwap recv.");
+    ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recvBuf, 512, retSize, 2);
+    if (ret == 0) {
+        LOGD("cmdSwap recv sucess, length: %d bytes. \n", retSize);
+        printfarray(recvBuf, 13);
+        if (recvBuf[0] == 0xf0 && recvBuf[0] == 0x00 &&recvBuf[0] == 0x08 &&recvBuf[0] == 0x01) {
+            if (buf[2] == recvBuf[4] && buf[3] == recvBuf[5] &&buf[4] == recvBuf[6] &&buf[5] == recvBuf[7]) {
+                LOGD("cmdSwap send and recv is equals.");
+                return 0;
+            } else {
+                LOGD("cmdSwap send and recv is not equals.");
+            }
+        }
+        return -1;
+    } else {
+        LOGD("cmdSwap recv faild, err: %s\n", libusb_error_name(ret));
+    }
+    return ret;
+}
+
+
 static void print_endpoint_comp(const struct libusb_ss_endpoint_companion_descriptor *ep_comp) {
     LOGD("      USB 3.0 Endpoint Companion:\n");
     LOGD("        bMaxBurst:           %u\n", ep_comp->bMaxBurst);
@@ -644,7 +677,7 @@ int FingerDownloadImage(unsigned char *imageBuffer) {
     for (int i = 0; i < 188; i++) {
         memset(downloadBuffer + 8, 0, 504);
         memcpy(downloadBuffer + 8, imageBuffer + i * 503, 503);
-        downloadBuffer[512] = cal_sum_checkcode(downloadBuffer + 1, 512);
+        downloadBuffer[511] = cal_sum_checkcode(downloadBuffer + 1, 511);
         ret = bulk_send(downloadBuffer, 512);
         if (ret == 0) {
             LOGD("FingerDownloadImage success.");
@@ -655,7 +688,7 @@ int FingerDownloadImage(unsigned char *imageBuffer) {
     }
     memset(downloadBuffer + 8, 0, 504);
     memcpy(downloadBuffer + 8, imageBuffer + 183 * 503, 111);//最后一个包
-    downloadBuffer[512] = cal_sum_checkcode(downloadBuffer + 1, 512);
+    downloadBuffer[511] = cal_sum_checkcode(downloadBuffer + 1, 511);
     ret = bulk_send(downloadBuffer, 512);
     if (ret == 0) {
         LOGD("FingerDownloadImage last packet success.");
@@ -691,6 +724,10 @@ int FingerDownloadFeature0(unsigned char *featureBuffer, int featureLength) {
     downloadBuffer[3] = 0x00;
     downloadBuffer[4] = 0x0D;
 
+    uint16_t dataLen = 503;
+    downloadBuffer[5] = dataLen >> 8;
+    downloadBuffer[6] = dataLen & 0xff;
+
     downloadBuffer[7] = cal_xor_checkcode(downloadBuffer + 1, 6);
 
     int packNum = featureLength / 503;
@@ -698,12 +735,13 @@ int FingerDownloadFeature0(unsigned char *featureBuffer, int featureLength) {
     for (int i = 0; i < packNum; i++) {
         memset(downloadBuffer + 8, 0, 504);
         memcpy(downloadBuffer + 8, featureBuffer + i * 503, 503);
-        downloadBuffer[512] = cal_sum_checkcode(downloadBuffer + 1, 512);
+        downloadBuffer[511] = cal_sum_checkcode(downloadBuffer + 1, 511);
+        printfarray(downloadBuffer, 13);
         ret = bulk_send(downloadBuffer, 512);
         if (ret == 0) {
-            LOGD("FingerDownloadFeature0 success.");
+            LOGD("FingerDownloadFeature0 send success.");
         } else {
-            LOGE("FingerDownloadFeature0 failed.");
+            LOGE("FingerDownloadFeature0 send failed.");
             return -1;
         }
 
@@ -714,30 +752,48 @@ int FingerDownloadFeature0(unsigned char *featureBuffer, int featureLength) {
             LOGD("FingerDownloadFeature0 recv cmd sucess, length: %d bytes. \n", size);
             printfarray(recv_cmd, 13);
         } else {
-            LOGD("FingerDownloadFeature0 recv cmd faild, err: %s\n", libusb_error_name(ret));
+            LOGE("FingerDownloadFeature0 recv cmd faild, err: %s\n", libusb_error_name(ret));
         }
 
     }
-    memset(downloadBuffer + 8, 0, 504);
+
+    memset(downloadBuffer, 0, 512);
+
+    downloadBuffer[0] = 0xF0;
+    downloadBuffer[1] = 0x6A;
+
+    downloadBuffer[2] = 0xC3;
+    downloadBuffer[3] = 0x00;
+    downloadBuffer[4] = 0x0D;
+
+    dataLen = tailNum;
+    downloadBuffer[5] = dataLen >> 8;
+    downloadBuffer[6] = dataLen & 0xff;
+
+    downloadBuffer[7] = cal_xor_checkcode(downloadBuffer + 1, 6);
+
     memcpy(downloadBuffer + 8, featureBuffer + packNum * 503, tailNum);//最后一个包
-    downloadBuffer[512] = cal_sum_checkcode(downloadBuffer + 1, 512);
+    downloadBuffer[8+tailNum] = cal_sum_checkcode(downloadBuffer + 1, 8+tailNum);
+    LOGD("FingerDownloadFeature0 send last packet.");
+    printfarray(downloadBuffer, 13);
     ret = bulk_send(downloadBuffer, 512);
     if (ret == 0) {
-        LOGD("FingerDownloadFeature0 last packet success.");
+        LOGD("FingerDownloadFeature0 send last packet success.");
     } else {
-        LOGE("FingerDownloadFeature0 last packet failed.");
+        LOGE("FingerDownloadFeature0 send last packet failed.");
         return -1;
     }
 
     uint8_t recv_cmd[512];
     memset(recv_cmd, 0, 512);
-    ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 2);
+    ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 3);
     if (ret == 0) {
-        LOGD("recv cmd sucess, length: %d bytes. \n", size);
+        LOGD("FingerDownloadFeature0 last recv cmd sucess, length: %d bytes. \n", size);
         printfarray(recv_cmd, 13);
         return 0;
     } else {
-        LOGD("recv cmd faild, err: %s\n", libusb_error_name(ret));
+        LOGD("FingerDownloadFeature0 last recv cmd faild, err: %s\n", libusb_error_name(ret));
+        return 0;
     }
     return -1;
 }
@@ -754,28 +810,23 @@ int FingerDownloadFeature1(unsigned char *featureBuffer) {
     downloadBuffer[2] = 0xC3;
     downloadBuffer[3] = 0x00;
     downloadBuffer[4] = 0x0E;
+    uint16_t  dataLen = 503;
+    downloadBuffer[5] = dataLen >> 8;
+    downloadBuffer[6] = dataLen & 0xff;
 
     downloadBuffer[7] = cal_xor_checkcode(downloadBuffer + 1, 6);
 
 
     memset(downloadBuffer + 8, 0, 504);
     memcpy(downloadBuffer + 8, featureBuffer, 503);
-    downloadBuffer[512] = cal_sum_checkcode(downloadBuffer + 1, 512);
+    downloadBuffer[511] = cal_sum_checkcode(downloadBuffer + 1, 511);
+    LOGD("FingerDownloadFeature1 send.");
+    printfarray(downloadBuffer, 13);
     ret = bulk_send(downloadBuffer, 512);
     if (ret == 0) {
-        LOGD("FingerDownloadFeature1 success.");
+        LOGD("FingerDownloadFeature1 send success.");
     } else {
-        LOGE("FingerDownloadFeature1 failed.");
-        return -1;
-    }
-    memset(downloadBuffer + 8, 0, 504);
-    memcpy(downloadBuffer + 8, featureBuffer + 503, 9);//最后一个包
-    downloadBuffer[512] = cal_sum_checkcode(downloadBuffer + 1, 512);
-    ret = bulk_send(downloadBuffer, 512);
-    if (ret == 0) {
-        LOGD("FingerDownloadFeature1 last packet success.");
-    } else {
-        LOGE("FingerDownloadFeature1 last packet failed.");
+        LOGE("FingerDownloadFeature1 send failed.");
         return -1;
     }
 
@@ -783,10 +834,35 @@ int FingerDownloadFeature1(unsigned char *featureBuffer) {
     memset(recv_cmd, 0, 512);
     ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 2);
     if (ret == 0) {
-        LOGD("recv cmd sucess, length: %d bytes. \n", size);
+        LOGD("FingerDownloadFeature1 last recv cmd sucess, length: %d bytes. \n", size);
         printfarray(recv_cmd, 13);
     } else {
-        LOGD("recv cmd faild, err: %s\n", libusb_error_name(ret));
+        LOGD("FingerDownloadFeature1 last recv cmd faild, err: %s\n", libusb_error_name(ret));
+        return 0;
+    }
+
+
+    memset(downloadBuffer + 8, 0, 504);
+    memcpy(downloadBuffer + 8, featureBuffer + 503, 9);//最后一个包
+    downloadBuffer[17] = cal_sum_checkcode(downloadBuffer + 1, 17);
+    LOGD("FingerDownloadFeature1 send last packet.");
+    printfarray(downloadBuffer, 13);
+    ret = bulk_send(downloadBuffer, 512);
+    if (ret == 0) {
+        LOGD("FingerDownloadFeature1 send last packet success.");
+    } else {
+        LOGE("FingerDownloadFeature1 send last packet failed.");
+        return -1;
+    }
+
+    memset(recv_cmd, 0, 512);
+    ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 2);
+    if (ret == 0) {
+        LOGD("FingerDownloadFeature1 recv last cmd sucess, length: %d bytes. \n", size);
+        printfarray(recv_cmd, 13);
+        return 0;
+    } else {
+        LOGD("FingerDownloadFeature1 recv last cmd faild, err: %s\n", libusb_error_name(ret));
     }
     return -1;
 }
