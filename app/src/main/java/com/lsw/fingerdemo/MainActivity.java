@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
                 setTextInfo("停止采集指纹.");
                 Log.i(TAG, "gather thread is stop.");
                 try {
-                    Thread.sleep(1);
+                    Thread.sleep(1000);
                 }catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -189,21 +189,16 @@ public class MainActivity extends AppCompatActivity {
                 byte[] feature0 = FingerUtils.getFeature0();
                 byte[] feature1 = FingerUtils.getFeature1();
                 int ret = LswFingerApi.lswFingerDownloadFeature0(feature0, 512);
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 Log.i(TAG, "lswFingerDownloadFeature0 ret:" + ret);
-//                ret = LswFingerApi.lswFingerDownloadFeature1(feature1);
-//                Log.i(TAG, "lswFingerDownloadFeature1 ret:" + ret);
+                ret = LswFingerApi.lswFingerDownloadFeature1(feature1);
+                Log.i(TAG, "lswFingerDownloadFeature1 ret:" + ret);
 
-//                byte[] score = LswFingerApi.lswFingerFeatureMatch();
-//                if (score != null) {
-//                    Log.i(TAG, "featureMatchTest score:" + score[0]);
-//                } else {
-//                    Log.e(TAG, "featureMatchTest failed.");
-//                }
+                byte[] score = LswFingerApi.lswFingerFeatureMatch();
+                if (score != null) {
+                    Log.i(TAG, "featureMatchTest score:" + score[0]);
+                } else {
+                    Log.e(TAG, "featureMatchTest failed.");
+                }
             }
         }).start();
 
