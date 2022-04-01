@@ -75,7 +75,8 @@ extern "C"
 JNIEXPORT jint JNICALL
 Java_com_lsw_fingerdemo_LswFingerApi_lswFingerDownloadImage(JNIEnv *env, jclass clazz,
                                                             jbyteArray image_buffer) {
-    return FingerDownloadImage((unsigned char *) image_buffer);
+    jbyte* bBuffer = env->GetByteArrayElements(image_buffer, 0);
+    return FingerDownloadImage((unsigned char *) bBuffer);
 }
 
 extern "C"

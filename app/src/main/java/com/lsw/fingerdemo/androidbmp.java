@@ -1,5 +1,8 @@
 package com.lsw.fingerdemo;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -42,13 +45,23 @@ class androidbmp {
     }
 
     public int save_bmp(String filePath,byte[] bufferdata) throws IOException {
-
         FileOutputStream fos = new FileOutputStream(filePath);
         fos.write(bmphead);
         fos.write(colorinfor);
         fos.write(bufferdata,0,256*360);
         fos.close();
         return 0;
+    }
+
+    public Bitmap decodeBitmap(byte[] bufferdata) {
+        byte[] bitmapBuffer = new byte[bmphead.length + colorinfor.length + 256*360];
+
+        System.arraycopy(bmphead, 0, bitmapBuffer, 0, bmphead.length);
+        System.arraycopy(colorinfor, 0, bitmapBuffer, bmphead.length, colorinfor.length);
+        System.arraycopy(bufferdata, 0, bitmapBuffer, bmphead.length + colorinfor.length, bufferdata.length);
+
+        Bitmap bm = BitmapFactory.decodeByteArray(bitmapBuffer,0, 256*360);
+        return bm;
     }
 
 }

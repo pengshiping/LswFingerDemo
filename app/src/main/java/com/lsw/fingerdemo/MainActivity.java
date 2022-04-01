@@ -42,10 +42,14 @@ public class MainActivity extends AppCompatActivity {
         binding.btnOpen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (LswFingerApi.lswFingerApiOpen() == 0) {
-                    setTextInfo("指纹模组打开成功.");
+                if (UsbApiManager.bOpen) {
+                    if (LswFingerApi.lswFingerApiOpen() == 0) {
+                        setTextInfo("指纹模组打开成功.");
+                    } else {
+                        setTextInfo("指纹模组打开失败.");
+                    }
                 } else {
-                    setTextInfo("指纹模组打开失败.");
+                    setTextInfo("未识别到指纹模组.");
                 }
             }
         });
@@ -58,10 +62,12 @@ public class MainActivity extends AppCompatActivity {
         binding.btnCal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (LswFingerApi.lswFingerApiCalibration() == 0) {
-                    setTextInfo("指纹模组通讯校验成功.");
-                } else {
-                    setTextInfo("指纹模组通讯校验失败.");
+                if (UsbApiManager.bOpen) {
+                    if (LswFingerApi.lswFingerApiCalibration() == 0) {
+                        setTextInfo("指纹模组通讯校验成功.");
+                    } else {
+                        setTextInfo("指纹模组通讯校验失败.");
+                    }
                 }
             }
         });
@@ -69,32 +75,41 @@ public class MainActivity extends AppCompatActivity {
         binding.btnVersion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //LswFingerApi.lswFingerApiVersion();
-                featureMatchTest();
+                if (UsbApiManager.bOpen) {
+                    //LswFingerApi.lswFingerApiVersion();
+                    //featureMatchTest();
+                    imageMatchTest();
+                }
             }
         });
         binding.btnTest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (LswFingerApi.lswFingerApiTest() == 0) {
-                    setTextInfo("指纹模组通讯测试成功，可以采集指纹.");
-                } else {
-                    setTextInfo("指纹模组通讯测试失败.");
+                if (UsbApiManager.bOpen) {
+                    if (LswFingerApi.lswFingerApiTest() == 0) {
+                        setTextInfo("指纹模组通讯测试成功，可以采集指纹.");
+                    } else {
+                        setTextInfo("指纹模组通讯测试失败.");
+                    }
                 }
             }
         });
         binding.btnClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (LswFingerApi.lswFingerApiClose() == 0) {
-                    setTextInfo("指纹模组已经关闭");
+                if (UsbApiManager.bOpen) {
+                    if (LswFingerApi.lswFingerApiClose() == 0) {
+                        setTextInfo("指纹模组已经关闭");
+                    }
                 }
             }
         });
         binding.btnGather.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startGatherRawThread();
+                if (UsbApiManager.bOpen) {
+                    startGatherRawThread();
+                }
             }
         });
     }
@@ -129,17 +144,18 @@ public class MainActivity extends AppCompatActivity {
                     if (rawFinger.length > 0) {
                         String filename = bmpfilepath + "/a.bmp";
                         androidbmp mandroidbmp = new androidbmp();
-                        File mFile = new File(filename);
-                        if (mFile.exists()) {
-                            mFile.delete();
-                        }
-                        try {
-                            mandroidbmp.save_bmp(filename, rawFinger);
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        Bitmap bm = BitmapFactory.decodeFile(filename);
+//                        File mFile = new File(filename);
+//                        if (mFile.exists()) {
+//                            mFile.delete();
+//                        }
+//                        try {
+//                            mandroidbmp.save_bmp(filename, rawFinger);
+//
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+                        //Bitmap bm = BitmapFactory.decodeFile(filename);
+                        Bitmap bm = mandroidbmp.decodeBitmap(rawFinger);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {

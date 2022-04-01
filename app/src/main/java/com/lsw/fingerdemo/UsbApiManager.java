@@ -146,6 +146,7 @@ public class UsbApiManager {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            bOpen = false;
             if (ACTION_USB_PERMISSION.equals(action)) {
                 synchronized (this) {
                     mContext.unregisterReceiver(mUsbReceiver);
@@ -157,7 +158,10 @@ public class UsbApiManager {
                             permit = 1;
                             fd = mDeviceConnection.getFileDescriptor();
                             Log.i(TAG, "fileDescriptor fd:" + fd);
-                            LswFingerApi.lswFingerApiInit(fd);
+                            int ret = LswFingerApi.lswFingerApiInit(fd);
+                            if (ret == 0) {
+                                bOpen = true;
+                            }
                         } else {
                             Log.e(TAG, "UsbManager openDevice failed");
                             //return FingerStatusCode.STATUS_USB_ERROR_ACCESS;
