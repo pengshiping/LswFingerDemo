@@ -43,13 +43,13 @@ unsigned char cal_sum_checkcode(unsigned char *pBuf, int nLen) {
 }
 
 void printfarray(unsigned char *array, int length) {
-    char printstr[512];
-    memset(printstr, 0, 512);
-    sprintf(printstr, "[%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x]", array[0], array[1], array[2],
-            array[3],
-            array[4], array[5], array[6], array[7], array[8], array[9], array[10], array[11],
-            array[12]);\
-    LOGD("%s", printstr);
+//    char printstr[512];
+//    memset(printstr, 0, 512);
+//    sprintf(printstr, "[%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x]", array[0], array[1], array[2],
+//            array[3],
+//            array[4], array[5], array[6], array[7], array[8], array[9], array[10], array[11],
+//            array[12]);\
+//    LOGD("%s", printstr);
 }
 
 //采用bulk端点发送数据
@@ -517,7 +517,7 @@ static unsigned char *send_obtain_finger_img_cmd() {
         ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 1000);
         if (ret == 0) {
             // LOGD("recv cmd sucess, length: %d bytes. \n", size);
-            printfarray(recv_cmd, 13);
+            //printfarray(recv_cmd, 13);
             if (recv_cmd[0] == 0xf0 && recv_cmd[1] == 1 && recv_cmd[2] == 0xfc &&
                 recv_cmd[3] == 0x02) {
                 memcpy(fingerBuffer + i * 508, recv_cmd + 4, 508);
