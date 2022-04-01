@@ -118,7 +118,10 @@ public class UsbApiManager {
                permit = 1;
                fd = mDeviceConnection.getFileDescriptor();
                Log.i(TAG,"openDevice success fd:" + fd);
-               LswFingerApi.lswFingerApiInit(fd);
+               int ret = LswFingerApi.lswFingerApiInit(fd);
+               if (ret == 0) {
+                   bOpen = true;
+               }
                return FingerStatusCode.STATUS_OK;
            }
            // mDeviceConnection.claimInterface(interfaceA,true);

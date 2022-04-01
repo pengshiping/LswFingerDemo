@@ -43,13 +43,13 @@ unsigned char cal_sum_checkcode(unsigned char *pBuf, int nLen) {
 }
 
 void printfarray(unsigned char *array, int length) {
-//    char printstr[512];
-//    memset(printstr, 0, 512);
-//    sprintf(printstr, "[%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x]", array[0], array[1], array[2],
-//            array[3],
-//            array[4], array[5], array[6], array[7], array[8], array[9], array[10], array[11],
-//            array[12]);\
-//    LOGD("%s", printstr);
+    char printstr[512];
+    memset(printstr, 0, 512);
+    sprintf(printstr, "[%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x]", array[0], array[1], array[2],
+            array[3],
+            array[4], array[5], array[6], array[7], array[8], array[9], array[10], array[11],
+            array[12]);\
+    LOGD("%s", printstr);
 }
 
 //采用bulk端点发送数据
@@ -85,8 +85,8 @@ static int cmdSwap(unsigned char *buf, int num) {
     ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recvBuf, 512, &retSize, 1000);
     if (ret == 0) {
        // LOGD("cmdSwap recv sucess, length: %d bytes. \n", retSize);
-        printfarray(recvBuf, 13);
-        if ((recvBuf[0] == 0xf0) && (recvBuf[1] == 0x00) && (recvBuf[2] == 0x08) && (recvBuf[3] == 0x01)) {
+        //printfarray(recvBuf, 13);
+        if ((recvBuf[0] == 0xf0) && (recvBuf[1] == 0x00) && (recvBuf[2] == 0x08) && (recvBuf[3] == 0x01 || recvBuf[3] == 0x02)) {
             if (buf[2] == recvBuf[4] && buf[3] == recvBuf[5] &&buf[4] == recvBuf[6]) {
                 //LOGD("cmdSwap send and recv is equals.");
                 return 0;
@@ -120,7 +120,7 @@ static int cmdSwap(unsigned char *buf, int num, unsigned char *recvBuf, int* ret
     ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recvBuf, 512, retSize, 1000);
     if (ret == 0) {
         //LOGD("cmdSwap recv sucess, length: %d bytes. \n", *retSize);
-        printfarray(recvBuf, 13);
+        //printfarray(recvBuf, 13);
         if ((recvBuf[0] == 0xf0) && (recvBuf[1] == 0x00) && (recvBuf[2] == 0x08) && (recvBuf[3] == 0x01)) {
             if (buf[2] == recvBuf[4] && buf[3] == recvBuf[5] &&buf[4] == recvBuf[6] &&buf[5] == recvBuf[7]) {
                 //LOGD("cmdSwap send and recv is equals.");
@@ -497,54 +497,43 @@ static unsigned char *send_obtain_finger_img_cmd() {
     version_cmd[7] = cal_xor_checkcode(version_cmd + 1, 6);
     version_cmd[8] = 0x00;//包序号，从0开始，读181次，每次508字节
     version_cmd[9] = cal_sum_checkcode(version_cmd + 1, 9);
+   // LOGD("send_obtain_finger_img_cmd");
 
-    //LOGD("send_obtain_finger_img_cmd");
-    //printfarray(version_cmd, 13);
-
-    ret = bulk_send(version_cmd, 512);
-    if (ret == 0) {
-        // LOGD("send_obtain_finger_img_cmd success.");
-    } else {
-        if (ret != LIBUSB_ERROR_TIMEOUT) { //不是超时才打日志
-            LOGE("send_obtain_finger_img_cmd failed ret:%d.", ret);
-        }
+    ret = cmdSwap(version_cmd, 512);
+    if (ret != 0) {
+        LOGE("send_obtain_finger_img_cmd failed ret:%d.", ret);
         return NULL;
     }
 
     int size;
-    int rec;
     uint8_t recv_cmd[512];   //打开指纹仪 响应包
     unsigned char *fingerBuffer = (unsigned char *) malloc(92160);
     if (fingerBuffer != NULL) {
         memset(fingerBuffer, 0, 92160);
     }
-    while (1) {
+
+    for (int i = 0; i < 182; i++) {
         memset(recv_cmd, 0, 512);
-        rec = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 1000);
-        if (rec == 0) {
+        ret = libusb_bulk_transfer(dev_handle, BULK_RECV_EP, recv_cmd, 512, &size, 1000);
+        if (ret == 0) {
             // LOGD("recv cmd sucess, length: %d bytes. \n", size);
-            //printfarray(recv_cmd, 13);
+            printfarray(recv_cmd, 13);
             if (recv_cmd[0] == 0xf0 && recv_cmd[1] == 1 && recv_cmd[2] == 0xfc &&
                 recv_cmd[3] == 0x02) {
-                memcpy(fingerBuffer + image_number * 508, recv_cmd + 4, 508);
-                image_number++;
+                memcpy(fingerBuffer + i * 508, recv_cmd + 4, 508);
             }
             if (recv_cmd[0] == 0xf0 && recv_cmd[1] == 0 && recv_cmd[2] == 0xd4 &&
                 recv_cmd[3] == 0x01) {
                 //最后一包只有212个字节
-                memcpy(fingerBuffer + image_number * 508, recv_cmd + 4, 212);
-                image_number++;
-               // LOGD("the last image number:%d", image_number);
-                //LOGD("gather finger image success:", image_number);
-                image_number = 0;
+                memcpy(fingerBuffer + i * 508, recv_cmd + 4, 212);
+                //LOGD("gather finger image success:%d:", i);
                 return fingerBuffer;
             }
         } else {
-            LOGE("recv cmd faild, err: %s, line:%d.\n", libusb_error_name(rec), __LINE__);
+            LOGE("recv cmd faild, err: %s, line:%d.\n", libusb_error_name(ret), __LINE__);
             return NULL;
         }
     }
-    return NULL;
 }
 
 unsigned char *FingerApiGatherRawFinger() {

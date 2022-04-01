@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
                 if (UsbApiManager.bOpen) {
                     //LswFingerApi.lswFingerApiVersion();
                     //featureMatchTest();
-                    imageMatchTest();
+                    //imageMatchTest();
                 }
             }
         });
