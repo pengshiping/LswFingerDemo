@@ -2,15 +2,24 @@ package com.lsw.fingerdemo;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationManagerCompat;
+
 import android.Manifest;
+import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
+
 import com.lsw.fingerdemo.databinding.ActivityMainBinding;
 import java.io.File;
 import java.io.IOException;
@@ -233,8 +242,16 @@ public class MainActivity extends AppCompatActivity {
     private void imageMatchTest() {
         byte[] feature0 = FingerUtils.getFeature0();
         byte[] image = FingerUtils.getFingerImage();
-        LswFingerApi.lswFingerDownloadFeature0(feature0, 512);
-        LswFingerApi.lswFingerDownloadImage(image);
+
+        byte[] mirror = new byte[256 * 360];
+        for (int i = 0; i < 256; i++) {
+            for (int j = 0; j < 360; j++) {
+                mirror[j * 256 + 255 - i] = image[j * 256 + i];
+            }
+        }
+
+        LswFingerApi.lswFingerDownloadFeature0(feature0, 1024);
+        LswFingerApi.lswFingerDownloadImage(mirror);
         byte[] score = LswFingerApi.lswFingerImageMatch();
         if (score != null) {
             Log.i(TAG, "imageMatchTest score:" + score[0] + "," + score[1]);

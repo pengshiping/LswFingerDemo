@@ -784,7 +784,7 @@ int FingerImageMatch(unsigned char *match_result) {
 
     image_match_cmd[2] = 0xC3;
     image_match_cmd[3] = 0x00;
-    image_match_cmd[4] = 0x04;
+    image_match_cmd[4] = 0x05;
 
     image_match_cmd[7] = cal_xor_checkcode(image_match_cmd + 1, 6);
     image_match_cmd[8] = cal_sum_checkcode(image_match_cmd + 1, 8);
