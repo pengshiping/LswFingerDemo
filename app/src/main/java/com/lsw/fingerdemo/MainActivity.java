@@ -68,6 +68,16 @@ public class MainActivity extends AppCompatActivity {
                 mGatherThreadIsRun = false;
             }
         });
+        binding.btnGather2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (UsbApiManager.bOpen) {
+                    mGatherThreadIsRun = false;
+                    gatherFinger();
+                }
+            }
+        });
+
         binding.btnCal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -78,17 +88,12 @@ public class MainActivity extends AppCompatActivity {
                         setTextInfo("指纹模组通讯校验失败.");
                     }
                 }
-            }
-        });
-
-        binding.btnVersion.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (UsbApiManager.bOpen) {
-                    //LswFingerApi.lswFingerApiVersion();
-                    //featureMatchTest();
-                    //imageMatchTest();
-                }
+//                if (UsbApiManager.bOpen) {
+//                    //LswFingerApi.lswFingerApiVersion();
+//                    //featureMatchTest();
+//                    //imageMatchTest();
+//
+//                }
             }
         });
         binding.btnTest.setOnClickListener(new View.OnClickListener() {
@@ -133,6 +138,27 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void gatherFinger() {
+        byte[] rawFinger = LswFingerApi.lswFingerApiGatherRawFinger();
+        if (rawFinger == null) {
+            Log.i(TAG, "lswFingerApiGatherRawFinger failed");
+            setTextInfo("采集失败");
+            return;
+        }
+        if (rawFinger.length > 0) {
+            androidbmp mandroidbmp = new androidbmp();
+            Bitmap bm = mandroidbmp.decodeBitmap(rawFinger);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    binding.fpImage.setImageBitmap(bm);
+                }
+            });
+        } else {
+            Log.e(TAG, "can not get pic!!!");
+        }
+    }
+
 
     private void startGatherRawThread() {
         mGatherThreadIsRun = true;
@@ -141,41 +167,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 while (mGatherThreadIsRun) {
-                    byte[] rawFinger = LswFingerApi.lswFingerApiGatherRawFinger();
-                    if (rawFinger != null) {
-                        //Log.i(TAG, "lswFingerApiGatherRawFinger success");
-                    } else {
-                        //Log.e(TAG, "lswFingerApiGatherRawFinger failed regather.");
-                        continue;
-                    }
-                    String bmpfilepath = Environment.getExternalStorageDirectory().getAbsolutePath();
-                    //Log.e(TAG, "" + bmpfilepath);
-                    if (rawFinger.length > 0) {
-                        String filename = bmpfilepath + "/a.bmp";
-                        androidbmp mandroidbmp = new androidbmp();
-//                        File mFile = new File(filename);
-//                        if (mFile.exists()) {
-//                            mFile.delete();
-//                        }
-//                        try {
-//                            mandroidbmp.save_bmp(filename, rawFinger);
-//
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-                        //Bitmap bm = BitmapFactory.decodeFile(filename);
-                        Bitmap bm = mandroidbmp.decodeBitmap(rawFinger);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                binding.fpImage.setImageBitmap(bm);
-                            }
-                        });
-                    } else {
-                        Log.e(TAG, "can not get pic!!!");
-                    }
+                    gatherFinger();
                 }
-                setTextInfo("停止采集指纹.");
+                setTextInfo("停止连续采集指纹.");
                 Log.i(TAG, "gather thread is stop.");
                 try {
                     Thread.sleep(1000);
@@ -263,6 +257,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mGatherThreadIsRun = false;
         LswFingerApi.lswFingerApiClose();
         System.exit(0);
     }
